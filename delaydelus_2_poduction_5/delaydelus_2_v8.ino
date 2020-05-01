@@ -1,6 +1,5 @@
-// Delaydelus 2 v5
-// by john-mike reed
-// bleeplabs.com
+///from proto 1 6
+
 
 #include <Bounce.h>
 #include <Audio.h>
@@ -12,21 +11,24 @@
 
 IntervalTimer timer1;
 
+// GUItool: begin automatically generated code
 
 AudioSampler             sample0, sample1, sample2, sample3;
+//AudioSampler             *sampler[4] = { &sample0, &sample1, &sample2, &sample3};
 AudioEffectTapeDelay     delay1, delay2;
 AudioFilterStateVariable filterdly1, filterdly2, hpf1, hpf2, envfl, envfr;
 AudioAnalyzeFollower     follower0;
 AudioAnalyzeFollower     follower1;
 AudioSynthWaveformSine sinetestl, sinetest2;
-AudioInputI2S            i2s_input;          
-AudioRecordQueue         queue_left, queue_right;      
+AudioInputI2S            i2s_input;           //xy=120,357
+AudioRecordQueue         queue_left, queue_right;        //xy=260,280
 AudioMixer4              mixer1, mixer2, mixer3, mixer4, mixer5, mixer6, mixerR, mixerL, mixer_in_left, mixer_in_right, mixer_in_peak, mixerf1, mixerf2, mixerf3, mixerf0, mixertest1, mixertest0;
-AudioOutputI2S           i2s_output;        
+AudioOutputI2S           i2s_output;           //xy=436,361
 AudioOutputAnalogStereo  DAC;
 AudioAnalyzePeak         peakin, peakright, peakleft;
 
 AudioEffectWaveshaper waveshaper_in_left, waveshaper_in_right, waveshaper_dly1, waveshaper_dly2;
+
 
 AudioConnection          pc1(sample0, 0, mixer1, 0);
 AudioConnection          pc2(sample0, 1, mixer2, 0);
@@ -50,12 +52,16 @@ AudioConnection          pc152(waveshaper_dly1, 0, filterdly1, 0);
 AudioConnection          pc142(filterdly1, 0, hpf1, 0);
 AudioConnection          pc1421(hpf1, 2, mixer3, 3);
 
+
+
 AudioConnection          pc151(mixer4, 0, delay2, 0);
 AudioConnection          pc1512(delay2, 0, waveshaper_dly2, 0);
 
 AudioConnection          pc1513(waveshaper_dly2, 0, filterdly2, 0);
 AudioConnection          pc15131(filterdly2, 0, hpf2, 0);
 AudioConnection          pc1514(hpf2, 2, mixer4, 3);
+
+
 
 AudioConnection          pc9(mixer_in_left, 0, mixer3, 1);
 
@@ -130,6 +136,8 @@ AudioConnection          pco131(mixerR, 0, i2s_output, 1);
 
 AudioControlSGTL5000     sgtl5000_1;     //xy=291,525
 
+
+// GUItool: end automatically generated code
 #define LPOT 32
 #define RPOT 35
 #define TIMEPOT 16
@@ -168,6 +176,8 @@ byte contact_reading[17] = {};
 byte left_en_contacts[16] = {};
 byte right_en_contacts[16];
 
+//byte shiftin_pin_oder[16] = {7, 3, 0, 9, 13, 5, 1, 8, 11, 15, 7, 7, 7, 7, 7, 7};
+
 byte shiftin_pin_oder[16] = {15, 11, 0, 3, 7,   13, 9, 8, 1, 5,     7, 7, 7, 7, 7, 7};
 
 #define BOUNCE_LOCK_OUT
@@ -178,8 +188,13 @@ Bounce buttonMode =   Bounce(SHIFTBUT, 8);  // 8 = 8 ms debounce time
 Bounce button1Play =   Bounce(LBUT, 8);
 Bounce button2Play =   Bounce(RBUT, 8);
 
+//Bounce trig1in =   Bounce(Ti1, 4);
+//Bounce trig2in =   Bounce(Ti2, 4);
+
+
 #include <Adafruit_NeoPixel.h>
 #define LED_PIN  27
+//Adafruit_NeoPixel pixels = Adafruit_NeoPixel(2, LED_PIN, NEO_RGB + NEO_KHZ800);
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(2, LED_PIN, NEO_GRBW + NEO_KHZ800);
 
 
@@ -196,9 +211,11 @@ char NewFile_name[11] = {};
 
 int getsize = AUDIO_BLOCK_SAMPLES * 2;
 
+// Remember which mode we're doing
 int mode = 0;  // 0=stopped, 1=recording, 2=playing
-float norm = 86.1679 * 2; 
-File frec;// The file where data is recorded
+float norm = 86.1679 * 2;
+// The file where data is recorded
+File frec;
 uint32_t address;
 byte erasedb = 0;
 uint32_t prev[8];
@@ -278,7 +295,8 @@ uint32_t wait_to_read_timer[3];
 const float lerp_step_size = .03;
 const byte wait_to_read_len = 1;   //0 would be no wait it takes 2-3 ms to loop so 1 really jsut mean wait a loop
 uint16_t redout, grnout, bluout, whout;
-int16_t cv_offset = 0; //for trimmer based one which it needs to be set to 1440
+int16_t cv_offset = -1760; //for trimmer based one which it needs to be
+//int16_t cv_offset;
 float dly_seperation = 1;
 byte button_gate_out[3] = {0, 0, 0};
 byte loop_trig_out[3] = {0, 0, 0};
@@ -286,9 +304,8 @@ uint32_t mode_timer, mode_cm;
 byte mode_timer_latch;
 byte sd_green;
 byte test_mode = 0;
-uint16_t foundhigh[8];
-
-float WAVESHAPE_A[17] = {  //not used
+byte loop_en_check[3][5];
+float WAVESHAPE_A[17] = {
   -0.9408,
   -0.9264,
   -0.8784,
@@ -307,6 +324,20 @@ float WAVESHAPE_A[17] = {  //not used
   0.9264,
   0.9408
 };
+
+
+File destination_file;
+
+byte wav_header[44] = {
+  0x52, 0x49, 0x46, 0x46, 0   ,    0,    0,    0, 0x57, 0x41, 0x56, 0x45,
+  0x66, 0x6D, 0x74, 0x20, 0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00,
+  0x44, 0xAC, 0x00, 0x00, 0x10, 0xB1, 0x02, 0x00, 0x04, 0x00, 0x10, 0x00,
+  0x64, 0x61, 0x74, 0x61, 0   ,    0,    0,    0
+};
+uint32_t wav_size = 90350 * 4; // file size was in stero 16b not total bytes
+uint32_t wav_offset = 3145728;
+
+
 
 void setup() {
   AudioNoInterrupts();
@@ -437,6 +468,7 @@ void setup() {
   SPI.setMOSI(FLASH_MOSI_PIN);
   SPI.setSCK(FLASH_SCK_PIN);
   SPI.setCS(6);
+  blink_delay(250);
 
   if (!SerialFlash.begin(FlashChipSelect)) {
     while (1) {
@@ -450,6 +482,7 @@ void setup() {
       pixels.show();
     }
   }
+  blink_delay(2000);
   byte sdpresent = 1;
   if (!SD.begin(SDchipSelect)) {
     sdpresent = 0;
@@ -477,8 +510,6 @@ void setup() {
     log_pot[i] = logt;
   }
 
-
-
   analogReadResolution(12);
   analogReadAveraging(32);
 
@@ -486,7 +517,8 @@ void setup() {
 
   byte shiftb = digitalRead(SHIFTBUT);
   byte recb = digitalRead(RECBUT);
-  Serial.println("hey");
+  Serial.println("howdy");
+  Serial.println("v 8");
 
   if (recb == 0 && shiftb == 0)
   {
@@ -540,7 +572,7 @@ void setup() {
     cv_offset = cvot * -1;
   }
 
-  if (cv_offset < 10 && cv_offset>-10) {
+  if (cv_offset < -1600 && cv_offset > -1300) {
     pixels.setPixelColor(0, 0, 80, 0, 5);
     pixels.show();
     delay(500);
@@ -557,22 +589,111 @@ void setup() {
 
   Serial.print("cv_offset ");
   Serial.println(cv_offset);
-  Serial.println ("banks ");
+  Serial.println ("banks: ");
   for (byte i = 0; i < 10; i++) {
     bankstart[i] = (i * sfblocks * 0x10000 * 4) + foffset;
     samplelen[i] = readlen(i);
+    Serial.print("i "); Serial.print(" ");
     Serial.print(bankstart[i]);
     Serial.print(" ");
     Serial.println(samplelen[i]);
 
   }
 
+  byte to_sd = 0;
+
+  if (digitalRead(LBUT) == 1 && digitalRead(SHIFTBUT) == 0 && digitalRead(RBUT) == 0 && digitalRead(RECBUT) == 1) {
+    to_sd = 1;
+  }
+
+
+  if (to_sd == 1 && sdpresent == 1) {
+    pixels.setPixelColor(0, 0, 0, 10, 1);
+    pixels.show();
+
+
+    char dir[13];
+    byte dir_num = 1;
+    byte ddone = 0;
+    while (ddone == 0) {
+      sprintf(dir, "user%d", dir_num);
+      File check_dir = SD.open(dir);
+
+      if (check_dir.isDirectory()) {
+        dir_num++;
+        Serial.print(dir);
+        Serial.println(" director exists");
+      }
+      else {
+        Serial.print(dir);
+        Serial.print(" nope...");
+        SD.mkdir(dir);
+        Serial.println(" created");
+        SD.open(dir);
+        ddone = 1;
+      }
+    }
+
+    char destination_file_name[13];
+    for (byte m = 0; m < 10; m++) {
+      pixels.setPixelColor(0, 0, 0, 10 + random(5), 1);
+      pixels.show();
+
+      sprintf(destination_file_name, "/%s/s%d.wav", dir, m + 1);
+      destination_file = SD.open(destination_file_name, FILE_WRITE);
+
+      if (destination_file) {
+
+        Serial.print("Writing ");
+        Serial.print(destination_file_name);
+
+        byte flash_read[32];
+        wav_size = samplelen[m] * 4;
+        wav_offset = bankstart[m];
+        uint16_t chunkSize = wav_size + 36;
+        wav_header[4] = chunkSize & 0xff;
+        wav_header[5] = chunkSize >> 8;
+        wav_header[6] = chunkSize >> 16;
+        wav_header[7] = chunkSize >> 24;
+
+
+        wav_header[40] = wav_size & 0xff;
+        wav_header[41] = wav_size >> 8;
+        wav_header[42] = wav_size >> 16;
+        wav_header[43] = wav_size >> 24;
+
+        destination_file.write(wav_header, 44);
+
+        for (uint32_t j = 0; j < wav_size ; j += 16) {
+          SerialFlash.read(j + wav_offset, flash_read, 16);
+          //Serial.println(j);
+
+          destination_file.write(flash_read, 16);
+        }
+
+        destination_file.close();
+        Serial.println(" done");
+        pixels.setPixelColor(0, 0, 0, 10, 20);
+        pixels.show();
+        delay(100);
+
+
+      } else {
+        Serial.println("error opening file");
+      }
+    }
+
+    Serial.println("all done copying flash to SD");
+
+  }
+
+
+
   sample0.begin(1, norm, bankstart[0], samplelen[0]);
   sample1.begin(1, norm, bankstart[1], samplelen[1]);
   sample2.begin(1, norm, bankstart[2], samplelen[2]);
   sample3.begin(1, norm, bankstart[3], samplelen[3]);
 
-  Serial.println("ok ");
 
   uint16_t tpr = (analogRead(TIMEPOT) - 4095) * -1;
 
@@ -801,14 +922,26 @@ void setup() {
       }
     }
   }
+  Serial.println(" ~ ok ~ ");
+
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void blink_delay(int ms) {
+  uint32_t start1 = millis();
+  while (millis() - start1 < ms) {
+    pixels.setPixelColor(0, 0 + random(2), random(2), 0, 2 + random(3));
+    pixels.show();
+    delay(20);
+  }
+
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
+uint16_t foundhigh[8];
 
 void loop() {
   uint32_t cmm = micros();
@@ -860,7 +993,7 @@ void loop() {
     Serial.println();
   }
 
-  if (cm - prev[2] > 1000 && 1 == 0 ) {
+  if (cm - prev[2] > 200 && 1 == 0 ) {
     prev[2] = cm;
     printMon();
     print_contacts();
@@ -1198,31 +1331,6 @@ void loop() {
 
   }
 
-  if (button1Play.read() == 0 && buttonMode.fallingEdge() ) { ///%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-    loop_en[1] = !loop_en[1];
-    for (int i = 0; i < 4; i++)
-    {
-      if (poly_but_ass[i] == 1) {
-        sample_loop_enable(i, loop_en[1]);
-      }
-    }
-    if (loop_en[1] == 1) {
-      // play_lefts();
-
-    }
-    if (loop_en[1] == 0) {
-      for (int i = 0; i < 4; i++) {
-        if (poly_but_ass[i] == 1) {
-          sample_stop(i);
-        }
-      }
-    }
-
-    notify_latch[0] = 1;
-    notify_cm[0] = cm;
-
-  }
 
   if (button2Play.fallingEdge()) {
     mode_timer = 0;
@@ -1237,12 +1345,44 @@ void loop() {
       play_rights();
     }
   }
+
+  if (button1Play.read() == 0 && buttonMode.fallingEdge() ) { ///%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+    loop_en[1] = !loop_en[1];
+    for (int i = 0; i < 4; i++)
+    {
+      if (poly_but_ass[i] == 1) {
+        loop_en_check[1][i] = loop_en[1];
+        sample_loop_enable(i, loop_en[1]);
+      }
+    }
+    if (loop_en[1] == 1) {
+      // play_lefts();
+
+    }
+    if (loop_en[1] == 0) {
+
+      for (int i = 0; i < 4; i++) {
+        if (poly_but_ass[i] == 1) {
+          sample_stop(i);
+          loop_en_check[1][i] = 0;
+
+        }
+      }
+    }
+
+    notify_latch[0] = 1;
+    notify_cm[0] = cm;
+
+  }
+
   if (button2Play.read() == 0 && buttonMode.fallingEdge() ) { ///%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     loop_en[2] = !loop_en[2];
     for (int i = 0; i < 4; i++)
     {
       if (poly_but_ass[i] == 2) {
+        loop_en_check[2][i] = loop_en[2];
         sample_loop_enable(i, loop_en[2]);
       }
     }
@@ -1250,6 +1390,7 @@ void loop() {
       for (int i = 0; i < 4; i++) {
         if (poly_but_ass[i] == 2) {
           sample_stop(i);
+          loop_en_check[2][i] = 0;
         }
       }
     }
@@ -1260,7 +1401,7 @@ void loop() {
 
 
   if (mode == 1) {
-    continueRecording();  /////////??????????????
+    continueRecording();
   }
 
 
@@ -1960,8 +2101,9 @@ void read_contacts() {
         {
           poly_sample_sel[i] = 0;
           poly_but_ass[i] = 0;
+          sample_loop_enable(i, 0);
+          loop_en_check[1][i] = 0;
           sample_stop(i);
-
         }
       }
 
@@ -2022,6 +2164,8 @@ void read_contacts() {
         {
           poly_sample_sel[i] = 0;
           poly_but_ass[i] = 0;
+          sample_loop_enable(i, 0);
+          loop_en_check[2][i] = 0;
           sample_stop(i);
 
         }
@@ -2138,6 +2282,8 @@ void print_contacts() {
   if (ctrc - ptrc[1] > 50 && 1 == 1) {
     ptrc[1] = ctrc;
     //printMon();
+    Serial.print("  ");
+
     for (int i = 0; i < 10; i++)
     {
       byte z = 0;
@@ -2154,33 +2300,53 @@ void print_contacts() {
       if (z == 0) {
         Serial.print("-");
       }
-      Serial.print("\t");
+      //Serial.print("\t");
+      Serial.print(" ");
 
       if (i == 4) {
         Serial.println("");
+        Serial.print("  ");
       }
 
     }
 
     Serial.println();
-    /*
-      Serial.print("poly_sample_sel ");
 
-      for (int i = 0; i < 4; i++)
-      {
+    Serial.println();
+
+    Serial.println("loops");
+
+    for (int i = 0; i < 4; i++)
+    {
+      Serial.print(loop_en_check[1][i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+    for (int i = 0; i < 4; i++)
+    {
+      Serial.print(loop_en_check[2][i]);
+      Serial.print(" ");
+    }
+    Serial.println();
+    Serial.println();
+
+    Serial.print("poly_sample_sel ");
+
+    for (int i = 0; i < 4; i++)
+    {
       Serial.print(poly_sample_sel[i]);
       Serial.print(" ");
-      }
-      Serial.println();
-      Serial.print("poly_but_ass    ");
+    }
+    Serial.println();
+    Serial.print("poly_but_ass    ");
 
-      for (int i = 0; i < 4; i++)
-      {
+    for (int i = 0; i < 4; i++)
+    {
       Serial.print(poly_but_ass[i]);
       Serial.print(" ");
-      }
-      byte ppp = 0;
-      if (ppp == 1) {
+    }
+    byte ppp = 0;
+    if (ppp == 1) {
       Serial.println();
       Serial.println();
       for (int i = 0; i < 4; i++)
@@ -2196,15 +2362,15 @@ void print_contacts() {
         Serial.print(" ");
       }
       Serial.println();
-      }
-      Serial.println();
+    }
+    Serial.println();
 
-      Serial.println("rec_target ");
+    Serial.println("rec_target ");
 
-      Serial.println(rec_target);
-      Serial.println();
-      Serial.println();
-    */
+    Serial.println(rec_target);
+    Serial.println();
+    Serial.println();
+
   }
 }
 
