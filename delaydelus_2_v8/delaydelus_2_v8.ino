@@ -1,4 +1,7 @@
-///from proto 1 6
+//Delaydelus 2 verison 8
+//by John-Michael Reed
+//https://bleeplabs.com/product/delaydelus-2-preorder/
+
 
 
 #include <Bounce.h>
