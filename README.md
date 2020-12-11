@@ -1,12 +1,10 @@
-The new sampling delay instrument. <br>
-Can playback 4 stereo samples at once with full speed control using the included aditions to the teensy audio library. <br>
-Based onthe teensy 3.6 <br>
-https://bleeplabs.com/product/delaydelus-2-preorder/
-
-Requires my branch of the audio library
-https://github.com/BleepLabs/Audio 
-
-Version 8 update  
+### The new sampling delay instrument.  
+Limited edition device avaiale in mid 2019  
+https://bleeplabs.com/product/delaydelus-2-preorder/   
+Can playback 4 stereo samples at once with full speed control using the included aditions to the teensy audio library.  
+Based onthe teensy 3.6. Requires my branch of the audio library https://github.com/BleepLabs/Audio. 
+  
+### Version 8 update  
 Adds the ability to copy recodrings from the device to the sd card <br>
 
 To upload this code to your delaydelus you'll need to install the [arduino IDE and teensyduino](https://github.com/BleepLabs/Dadageek-August20/wiki/Arduino-software-first-steps).  Once you have them installed just open teensyduino. I'll look like this.   
