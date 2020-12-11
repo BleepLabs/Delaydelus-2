@@ -15,7 +15,7 @@ To upload this code to your delaydelus you'll need to install the [arduino IDE a
 You'll need a 2mm allen wrench to remove the three screws on the bottom and a 1/16" allen for the four on the top in the corners top corners. Don't remove the two that are in the middle surrounded by the banana plug hotels on the top.  
 Now you'll see the usb micro port inside. 
   
-Click the button in the top left of select file>open HEX and give it the attached file.   
+Click the button in the top left of select file>open HEX and give it [this hex file](https://github.com/BleepLabs/Delaydelus-2/blob/master/delaydelus_2_poduction_8.ino.hex).  
 Now press the tiny white button shown here.    
 ![](https://raw.githubusercontent.com/BleepLabs/Dadageek-August20/master/images/teensy%20button.jpg)   
 teensyduino will say uploading and then you're done.   
