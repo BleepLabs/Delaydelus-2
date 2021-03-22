@@ -1,3 +1,7 @@
+### Sampler code  
+All the code from the delaydelus 2 is here but if you'd liek a much more resoanble verison of the Serial flash sampler check [this out](https://github.com/BleepLabs/Serial_flash_sampler_for_Teensy_Audio).  
+  
+  
 ### The new sampling delay instrument.  
 Limited edition device avaiale in mid 2019  
 https://bleeplabs.com/product/delaydelus-2-preorder/   
